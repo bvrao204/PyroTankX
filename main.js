@@ -99,6 +99,10 @@ const joystickKnobLimit = 35;
 let isMobileFireActive = false;
 let joystickTouchId = null;
 
+// Player names
+let p1Name = "Player 1";
+let p2Name = "Player 2";
+
 // Caching the ground backdrop (similar to Pygame's _ground_surf)
 let groundCanvas = null;
 
@@ -881,13 +885,24 @@ function hostOnlineGame() {
 }
 
 function bindHostConnection() {
+  p1Name = document.getElementById('playerNameInput').value.trim() || 'Player 1';
   conn.on('open', () => {
+    // Send host name to client
+    conn.send({
+      type: 'init',
+      name: p1Name
+    });
     lobbyOverlay.classList.add('hidden');
     startGame();
   });
 
   conn.on('data', (data) => {
-    if (data.type === 'input') {
+    if (data.type === 'init') {
+      p2Name = data.name;
+      // Update HUD elements
+      document.getElementById('p1HealthTitle').textContent = `${p1Name.toUpperCase()} ARMOR`;
+      document.getElementById('p2HealthSection').querySelector('.hud-title').textContent = `${p2Name.toUpperCase()} ARMOR`;
+    } else if (data.type === 'input') {
       p2Inputs = data;
     }
   });
@@ -909,12 +924,23 @@ function joinOnlineGame(code) {
     conn.on('open', () => {
       isMultiplayer = true;
       isHost = false;
+      p2Name = document.getElementById('playerNameInput').value.trim() || 'Player 2';
+      // Send client name to host
+      conn.send({
+        type: 'init',
+        name: p2Name
+      });
       lobbyOverlay.classList.add('hidden');
       startGame();
     });
 
     conn.on('data', (data) => {
-      if (data.type === 'state') {
+      if (data.type === 'init') {
+        p1Name = data.name;
+        // Update HUD elements
+        document.getElementById('p1HealthTitle').textContent = `${p1Name.toUpperCase()} ARMOR`;
+        document.getElementById('p2HealthSection').querySelector('.hud-title').textContent = `${p2Name.toUpperCase()} ARMOR`;
+      } else if (data.type === 'state') {
         remoteState = data;
       } else if (data.type === 'powerup') {
         if (data.kind === 'health') {
@@ -961,6 +987,17 @@ function buildEntities() {
 }
 
 function startGame() {
+  const nameInputVal = document.getElementById('playerNameInput').value.trim();
+  if (isMultiplayer) {
+    if (isHost) {
+      p1Name = nameInputVal || "Player 1";
+    } else {
+      p2Name = nameInputVal || "Player 2";
+    }
+  } else {
+    p1Name = nameInputVal || "Player 1";
+  }
+
   buildEntities();
   
   if (isMultiplayer) {
@@ -971,17 +1008,19 @@ function startGame() {
       p2Player.angle = 180;
       p2Player.hp = 5;
       document.getElementById('p2HealthSection').classList.remove('hidden');
-      document.getElementById('p1HealthTitle').textContent = "PLAYER 1 ARMOR";
+      document.getElementById('p1HealthTitle').textContent = `${p1Name.toUpperCase()} ARMOR`;
+      document.getElementById('p2HealthSection').querySelector('.hud-title').textContent = `${p2Name.toUpperCase()} ARMOR`;
     } else {
       player.x = WIDTH / 2 + 50;
       player.y = HEIGHT / 2 + 50;
       player.angle = 180;
       document.getElementById('p2HealthSection').classList.remove('hidden');
-      document.getElementById('p1HealthTitle').textContent = "PLAYER 1 ARMOR";
+      document.getElementById('p1HealthTitle').textContent = `${p1Name.toUpperCase()} ARMOR`;
+      document.getElementById('p2HealthSection').querySelector('.hud-title').textContent = `${p2Name.toUpperCase()} ARMOR`;
     }
   } else {
     document.getElementById('p2HealthSection').classList.add('hidden');
-    document.getElementById('p1HealthTitle').textContent = "ARMOR STATUS";
+    document.getElementById('p1HealthTitle').textContent = `${p1Name.toUpperCase()} ARMOR`;
   }
 
   spawnWave();
@@ -1436,6 +1475,7 @@ function draw() {
         if (remoteState.player1.shieldActive) {
           drawShieldCircle(ctx, remoteState.player1.x, remoteState.player1.y);
         }
+        drawPlayerName(ctx, remoteState.player1.x, remoteState.player1.y, p1Name);
       }
 
       // Draw Player 2 (Blue - Local Client)
@@ -1444,6 +1484,7 @@ function draw() {
         if (shieldTimer > 0) {
           drawShieldCircle(ctx, player.x, player.y);
         }
+        drawPlayerName(ctx, player.x, player.y, p2Name);
       }
 
       // Draw enemies
@@ -1483,6 +1524,7 @@ function draw() {
     if (shieldTimer > 0) {
       drawShieldCircle(ctx, player.x, player.y);
     }
+    drawPlayerName(ctx, player.x, player.y, p1Name);
   }
 
   // Draw player 2 (Host side)
@@ -1493,6 +1535,7 @@ function draw() {
     if (p2Inputs.shieldActive) {
       drawShieldCircle(ctx, p2Player.x, p2Player.y);
     }
+    drawPlayerName(ctx, p2Player.x, p2Player.y, p2Name);
   }
 
   // Draw enemies
@@ -1630,5 +1673,17 @@ function drawShieldCircle(ctx, x, y) {
   ctx.arc(x, y, pulseR, 0, Math.PI * 2);
   ctx.fill();
   ctx.stroke();
+  ctx.restore();
+}
+
+function drawPlayerName(ctx, x, y, name) {
+  ctx.save();
+  ctx.fillStyle = COLORS.WHITE;
+  ctx.font = "bold 11px 'Orbitron', sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "bottom";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(name, x, y - 32);
   ctx.restore();
 }

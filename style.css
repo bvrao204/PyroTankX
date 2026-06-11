@@ -652,3 +652,44 @@ body {
   margin-top: 10px;
   min-height: 20px;
 }
+
+/* --- PLAYER NAME INPUT --- */
+.name-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(20, 30, 20, 0.5);
+  border: 1px solid rgba(180, 180, 180, 0.15);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+}
+
+.name-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a0cda0;
+  letter-spacing: 1px;
+}
+
+.name-input {
+  background: rgba(10, 15, 10, 0.8);
+  color: #ffffff;
+  border: 1px solid rgba(120, 150, 120, 0.3);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 4px;
+  outline: none;
+  width: 160px;
+  text-align: center;
+  transition: all 0.2s ease;
+  letter-spacing: 1px;
+}
+
+.name-input:focus {
+  border-color: #00d2d2;
+  box-shadow: 0 0 10px rgba(0, 210, 210, 0.4);
+}
