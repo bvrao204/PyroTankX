@@ -69,6 +69,15 @@ let mouseX = 0;
 let mouseY = 0;
 let isMouseDown = false;
 
+// Joystick / Touch inputs
+let isTouchDevice = false;
+let joystickActive = false;
+let joystickX = 0;
+let joystickY = 0;
+let joystickStartTouch = { x: 0, y: 0 };
+const joystickKnobLimit = 50;
+let isMobileFireActive = false;
+
 // Caching the ground backdrop (similar to Pygame's _ground_surf)
 let groundCanvas = null;
 
@@ -373,6 +382,22 @@ class Player {
       this.y -= Math.sin(rad) * this.speed * 0.6;
     }
 
+    // Joystick Touch Controls
+    if (joystickActive) {
+      if (joystickY < -0.2) {
+        this.x += Math.cos(rad) * this.speed * Math.abs(joystickY);
+        this.y += Math.sin(rad) * this.speed * Math.abs(joystickY);
+      } else if (joystickY > 0.2) {
+        this.x -= Math.cos(rad) * this.speed * 0.6 * Math.abs(joystickY);
+        this.y -= Math.sin(rad) * this.speed * 0.6 * Math.abs(joystickY);
+      }
+      if (joystickX < -0.2) {
+        this.angle -= 3 * Math.abs(joystickX);
+      } else if (joystickX > 0.2) {
+        this.angle += 3 * Math.abs(joystickX);
+      }
+    }
+
     // Border constraints
     this.x = Math.max(25, Math.min(WIDTH - 25, this.x));
     this.y = Math.max(25, Math.min(HEIGHT - 25, this.y));
@@ -593,11 +618,11 @@ window.addEventListener('keyup', (e) => {
   keys[e.key] = false;
 });
 
-// Mouse listeners on Canvas
+// Mouse listeners on Canvas (scaled responsive coordinates)
 canvas.addEventListener('mousemove', (e) => {
   const rect = canvas.getBoundingClientRect();
-  mouseX = e.clientX - rect.left;
-  mouseY = e.clientY - rect.top;
+  mouseX = ((e.clientX - rect.left) / rect.width) * WIDTH;
+  mouseY = ((e.clientY - rect.top) / rect.height) * HEIGHT;
 });
 
 canvas.addEventListener('mousedown', (e) => {
@@ -609,6 +634,62 @@ canvas.addEventListener('mousedown', (e) => {
 window.addEventListener('mouseup', () => {
   isMouseDown = false;
 });
+
+// Check for Touch Capability
+isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+if (isTouchDevice) {
+  const joystickZone = document.getElementById('joystickZone');
+  const joystickKnob = document.getElementById('joystickKnob');
+  const mobileFireBtn = document.getElementById('mobileFireBtn');
+
+  // Touch handlers for joystick movement
+  joystickZone.addEventListener('touchstart', (e) => {
+    const touch = e.touches[0];
+    joystickStartTouch = { x: touch.clientX, y: touch.clientY };
+    joystickActive = true;
+  });
+
+  joystickZone.addEventListener('touchmove', (e) => {
+    if (!joystickActive) return;
+    const touch = e.touches[0];
+    let dx = touch.clientX - joystickStartTouch.x;
+    let dy = touch.clientY - joystickStartTouch.y;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > joystickKnobLimit) {
+      dx = (dx / dist) * joystickKnobLimit;
+      dy = (dy / dist) * joystickKnobLimit;
+    }
+
+    joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+    joystickX = dx / joystickKnobLimit;
+    joystickY = dy / joystickKnobLimit;
+  });
+
+  const resetJoystick = () => {
+    joystickActive = false;
+    joystickX = 0;
+    joystickY = 0;
+    joystickKnob.style.transform = 'translate(0px, 0px)';
+  };
+
+  joystickZone.addEventListener('touchend', resetJoystick);
+  joystickZone.addEventListener('touchcancel', resetJoystick);
+
+  // Touch handlers for fire button
+  mobileFireBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // Prevent double tap zoom
+    isMobileFireActive = true;
+  });
+
+  const stopFire = () => {
+    isMobileFireActive = false;
+  };
+
+  mobileFireBtn.addEventListener('touchend', stopFire);
+  mobileFireBtn.addEventListener('touchcancel', stopFire);
+}
 
 // Button Click Handlers
 playBtn.addEventListener('click', startGame);
@@ -639,6 +720,11 @@ function startGame() {
   startScreen.classList.add('hidden');
   gameOverScreen.classList.add('hidden');
   hud.classList.remove('hidden');
+
+  // Show mobile controls on touch screens
+  if (isTouchDevice) {
+    document.getElementById('mobileControls').classList.remove('hidden');
+  }
 }
 
 function spawnWave() {
@@ -670,6 +756,9 @@ function handleGameOver() {
   gameOverScreen.classList.remove('hidden');
   finalScore.textContent = score;
   endHighScore.textContent = highScore;
+
+  // Hide mobile controls
+  document.getElementById('mobileControls').classList.add('hidden');
 }
 
 // --- ENGINE LOOPS ---
@@ -703,7 +792,7 @@ function update() {
   player.update();
 
   // Handle Player shooting
-  if (keys[' '] || isMouseDown) {
+  if (keys[' '] || isMouseDown || isMobileFireActive) {
     const b = player.shoot();
     if (b) bullets.push(b);
   }

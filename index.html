@@ -48,8 +48,8 @@
         <!-- Controls Card -->
         <div class="controls-card">
           <h3>CONTROLS</h3>
-          <p><strong>Move & Rotate:</strong> W, A, S, D / Arrow Keys</p>
-          <p><strong>Aim & Shoot:</strong> Move Mouse & Left-Click (or Spacebar)</p>
+          <p><strong>Desktop:</strong> WASD / Arrows to Move. Mouse or Space to Shoot.</p>
+          <p><strong>Mobile:</strong> Use Left Joystick to Move & Rotate. Right Button to Shoot.</p>
         </div>
 
         <button id="playBtn" class="btn btn-primary">PLAY GAME</button>
@@ -76,6 +76,18 @@
         </div>
 
         <button id="restartBtn" class="btn btn-secondary">PLAY AGAIN</button>
+      </div>
+    </div>
+
+    <!-- Mobile Touch Controls -->
+    <div id="mobileControls" class="hidden">
+      <div id="joystickZone">
+        <div id="joystickBase">
+          <div id="joystickKnob"></div>
+        </div>
+      </div>
+      <div id="fireButtonZone">
+        <button id="mobileFireBtn">FIRE</button>
       </div>
     </div>
   </div>
