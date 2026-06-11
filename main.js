@@ -1,3 +1,9 @@
+// Vercel Speed Insights
+import { injectSpeedInsights } from '@vercel/speed-insights';
+
+// Initialize Speed Insights
+injectSpeedInsights();
+
 // Game Constants
 const WIDTH = 900;
 const HEIGHT = 650;
