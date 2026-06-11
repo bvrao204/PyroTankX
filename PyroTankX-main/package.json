@@ -1,7 +1,0 @@
-{
-  "name": "pyrotankx-inner",
-  "version": "1.0.0",
-  "scripts": {
-    "dev": "python mini_military_game.py"
-  }
-}
