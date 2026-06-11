@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PyroTankX — 2D Wave-Based Tank Combat Game</title>
+  <meta name="description" content="Take control of your tank, destroy enemy armor rolling in from all sides, collect power-ups, and survive waves of incoming tanks in this premium HTML5 game.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="gameContainer">
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas" width="900" height="650"></canvas>
+
+    <!-- HUD Overlay -->
+    <div id="hud" class="hidden">
+      <!-- Left HUD: Health & Active Powerup -->
+      <div id="hudLeft" class="hud-panel">
+        <div class="hud-title">ARMOR STATUS</div>
+        <div class="health-bar-container">
+          <div id="healthBar" class="health-bar" style="width: 100%;"></div>
+        </div>
+        <div id="powerupIndicator" class="powerup-text hidden">SHIELD ACTIVE</div>
+      </div>
+      
+      <!-- Right HUD: Score & Wave -->
+      <div id="hudRight" class="hud-panel">
+        <div class="hud-stat"><span class="label">SCORE:</span> <span id="hudScore" class="value">000000</span></div>
+        <div class="hud-stat"><span class="label">WAVE:</span> <span id="hudWave" class="value">0</span></div>
+      </div>
+
+      <!-- Wave Incoming Banner -->
+      <div id="waveBanner" class="wave-banner hidden">WAVE 1 INCOMING</div>
+    </div>
+
+    <!-- Start Screen Overlay -->
+    <div id="startScreen" class="overlay">
+      <div class="overlay-content">
+        <h1 class="game-title">PyroTankX</h1>
+        <p class="game-subtitle">Wave-Based 2D Tank Combat</p>
+
+        <!-- Controls Card -->
+        <div class="controls-card">
+          <h3>CONTROLS</h3>
+          <p><strong>Move & Rotate:</strong> W, A, S, D / Arrow Keys</p>
+          <p><strong>Aim & Shoot:</strong> Move Mouse & Left-Click (or Spacebar)</p>
+        </div>
+
+        <button id="playBtn" class="btn btn-primary">PLAY GAME</button>
+
+        <div id="startHighScore" class="high-score-display">HIGH SCORE: 0</div>
+      </div>
+    </div>
+
+    <!-- Game Over Screen Overlay -->
+    <div id="gameOverScreen" class="overlay hidden">
+      <div class="overlay-content">
+        <h2 class="game-over-title">MISSION FAILED</h2>
+        <p class="game-over-subtitle">Your tank was obliterated.</p>
+
+        <div class="score-summary">
+          <div class="score-row">
+            <span>FINAL SCORE</span>
+            <span id="finalScore" class="value-highlight">0</span>
+          </div>
+          <div class="score-row">
+            <span>HIGH SCORE</span>
+            <span id="endHighScore" class="value-highlight">0</span>
+          </div>
+        </div>
+
+        <button id="restartBtn" class="btn btn-secondary">PLAY AGAIN</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
