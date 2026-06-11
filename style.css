@@ -192,21 +192,21 @@ body {
   background: rgba(15, 20, 15, 0.82);
   border: 1px solid rgba(180, 180, 180, 0.35);
   border-radius: 6px;
-  padding: 12px 18px;
+  padding: 10px 14px;
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
 }
 
 #hudLeft {
   left: 15px;
-  width: 250px;
-  height: 95px;
+  width: 210px;
+  height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
 .hud-title {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: 1px;
@@ -215,10 +215,10 @@ body {
 .health-bar-container {
   background-color: #320000;
   border: 1px solid #ffffff;
-  height: 18px;
+  height: 14px;
   border-radius: 3px;
   overflow: hidden;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .health-bar {
@@ -229,9 +229,9 @@ body {
 }
 
 .powerup-text {
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  margin-top: 6px;
+  margin-top: 4px;
   letter-spacing: 1px;
 }
 
@@ -254,17 +254,17 @@ body {
 
 #hudRight {
   right: 15px;
-  width: 220px;
-  height: 85px;
+  width: 175px;
+  height: 70px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
+  gap: 5px;
 }
 
 .hud-stat {
   font-family: 'Orbitron', sans-serif;
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 700;
   display: flex;
   justify-content: space-between;
