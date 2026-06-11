@@ -95,7 +95,7 @@ let joystickActive = false;
 let joystickX = 0;
 let joystickY = 0;
 let joystickStartTouch = { x: 0, y: 0 };
-const joystickKnobLimit = 50;
+const joystickKnobLimit = 35;
 let isMobileFireActive = false;
 let joystickTouchId = null;
 
