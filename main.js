@@ -77,6 +77,7 @@ let joystickY = 0;
 let joystickStartTouch = { x: 0, y: 0 };
 const joystickKnobLimit = 50;
 let isMobileFireActive = false;
+let joystickTouchId = null;
 
 // Caching the ground backdrop (similar to Pygame's _ground_surf)
 let groundCanvas = null;
@@ -382,19 +383,35 @@ class Player {
       this.y -= Math.sin(rad) * this.speed * 0.6;
     }
 
-    // Joystick Touch Controls
+    // Joystick Touch Controls (Direct direction steering)
     if (joystickActive) {
-      if (joystickY < -0.2) {
-        this.x += Math.cos(rad) * this.speed * Math.abs(joystickY);
-        this.y += Math.sin(rad) * this.speed * Math.abs(joystickY);
-      } else if (joystickY > 0.2) {
-        this.x -= Math.cos(rad) * this.speed * 0.6 * Math.abs(joystickY);
-        this.y -= Math.sin(rad) * this.speed * 0.6 * Math.abs(joystickY);
-      }
-      if (joystickX < -0.2) {
-        this.angle -= 3 * Math.abs(joystickX);
-      } else if (joystickX > 0.2) {
-        this.angle += 3 * Math.abs(joystickX);
+      const joyDist = Math.hypot(joystickX, joystickY);
+      if (joyDist > 0.15) {
+        // Calculate target angle in degrees (-180 to 180)
+        let targetAngle = (Math.atan2(joystickY, joystickX) * 180) / Math.PI;
+        
+        // Normalize angles to 0-360 for clean interpolation
+        let currentAngle = (this.angle % 360 + 360) % 360;
+        let targetAngle360 = (targetAngle % 360 + 360) % 360;
+        
+        // Calculate shortest rotation path
+        let diff = targetAngle360 - currentAngle;
+        if (diff > 180) diff -= 360;
+        if (diff < -180) diff += 360;
+        
+        // Rotate smoothly towards target
+        const rotSpeed = 4.5;
+        if (Math.abs(diff) > rotSpeed) {
+          this.angle += Math.sign(diff) * rotSpeed;
+        } else {
+          this.angle = targetAngle360;
+        }
+        
+        // Move forward along tank current angle
+        const rad = (this.angle * Math.PI) / 180;
+        const speedFactor = Math.min(1.0, joyDist);
+        this.x += Math.cos(rad) * this.speed * speedFactor;
+        this.y += Math.sin(rad) * this.speed * speedFactor;
       }
     }
 
@@ -645,14 +662,27 @@ if (isTouchDevice) {
 
   // Touch handlers for joystick movement
   joystickZone.addEventListener('touchstart', (e) => {
-    const touch = e.touches[0];
+    e.preventDefault();
+    const touch = e.changedTouches[0];
+    joystickTouchId = touch.identifier;
     joystickStartTouch = { x: touch.clientX, y: touch.clientY };
     joystickActive = true;
-  });
+  }, { passive: false });
 
   joystickZone.addEventListener('touchmove', (e) => {
+    e.preventDefault();
     if (!joystickActive) return;
-    const touch = e.touches[0];
+
+    // Find the correct touch that started the joystick
+    let touch = null;
+    for (let i = 0; i < e.touches.length; i++) {
+      if (e.touches[i].identifier === joystickTouchId) {
+        touch = e.touches[i];
+        break;
+      }
+    }
+    if (!touch) return;
+
     let dx = touch.clientX - joystickStartTouch.x;
     let dy = touch.clientY - joystickStartTouch.y;
     const dist = Math.hypot(dx, dy);
@@ -665,30 +695,42 @@ if (isTouchDevice) {
     joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
     joystickX = dx / joystickKnobLimit;
     joystickY = dy / joystickKnobLimit;
-  });
+  }, { passive: false });
 
-  const resetJoystick = () => {
+  const resetJoystick = (e) => {
+    if (e) {
+      let ended = false;
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === joystickTouchId) {
+          ended = true;
+          break;
+        }
+      }
+      if (!ended) return;
+    }
+
     joystickActive = false;
+    joystickTouchId = null;
     joystickX = 0;
     joystickY = 0;
     joystickKnob.style.transform = 'translate(0px, 0px)';
   };
 
-  joystickZone.addEventListener('touchend', resetJoystick);
-  joystickZone.addEventListener('touchcancel', resetJoystick);
+  joystickZone.addEventListener('touchend', resetJoystick, { passive: false });
+  joystickZone.addEventListener('touchcancel', resetJoystick, { passive: false });
 
   // Touch handlers for fire button
   mobileFireBtn.addEventListener('touchstart', (e) => {
     e.preventDefault(); // Prevent double tap zoom
     isMobileFireActive = true;
-  });
+  }, { passive: false });
 
   const stopFire = () => {
     isMobileFireActive = false;
   };
 
-  mobileFireBtn.addEventListener('touchend', stopFire);
-  mobileFireBtn.addEventListener('touchcancel', stopFire);
+  mobileFireBtn.addEventListener('touchend', stopFire, { passive: false });
+  mobileFireBtn.addEventListener('touchcancel', stopFire, { passive: false });
 }
 
 // Button Click Handlers
