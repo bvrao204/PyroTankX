@@ -11,6 +11,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
   
+  <!-- PeerJS WebRTC Library -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -22,9 +24,17 @@
     <div id="hud" class="hidden">
       <!-- Left HUD: Health & Active Powerup -->
       <div id="hudLeft" class="hud-panel">
-        <div class="hud-title">ARMOR STATUS</div>
-        <div class="health-bar-container">
-          <div id="healthBar" class="health-bar" style="width: 100%;"></div>
+        <div id="p1HealthSection">
+          <div id="p1HealthTitle" class="hud-title">PLAYER 1 ARMOR</div>
+          <div class="health-bar-container">
+            <div id="healthBar" class="health-bar" style="width: 100%;"></div>
+          </div>
+        </div>
+        <div id="p2HealthSection" class="hidden" style="margin-top: 8px;">
+          <div class="hud-title">PLAYER 2 ARMOR</div>
+          <div class="health-bar-container">
+            <div id="healthBarP2" class="health-bar" style="width: 100%; background-color: #3264c8;"></div>
+          </div>
         </div>
         <div id="powerupIndicator" class="powerup-text hidden">SHIELD ACTIVE</div>
       </div>
@@ -52,9 +62,54 @@
           <p><strong>Mobile:</strong> Use Left Joystick to Move & Rotate. Right Button to Shoot.</p>
         </div>
 
-        <button id="playBtn" class="btn btn-primary">PLAY GAME</button>
+        <!-- Difficulty Selector -->
+        <div class="difficulty-panel">
+          <span class="diff-label">DIFFICULTY:</span>
+          <div class="diff-buttons">
+            <button id="diffEasy" class="diff-btn">EASY</button>
+            <button id="diffMedium" class="diff-btn active">MEDIUM</button>
+            <button id="diffHard" class="diff-btn">HARD</button>
+          </div>
+        </div>
+
+        <!-- Game Modes -->
+        <div class="mode-buttons">
+          <button id="playBtn" class="btn btn-primary" style="margin-bottom: 15px; display: block; width: 100%;">SINGLE PLAYER</button>
+          <div class="multiplayer-row">
+            <button id="hostBtn" class="btn btn-primary btn-multi">HOST GAME</button>
+            <button id="joinBtn" class="btn btn-primary btn-multi">JOIN GAME</button>
+          </div>
+        </div>
 
         <div id="startHighScore" class="high-score-display">HIGH SCORE: 0</div>
+      </div>
+    </div>
+
+    <!-- Multiplayer Lobby Overlay -->
+    <div id="lobbyOverlay" class="overlay hidden">
+      <div class="overlay-content lobby-card">
+        <h2 class="game-title" style="font-size: 2.8rem; margin-bottom: 20px;">MULTIPLAYER</h2>
+        
+        <!-- Hosting Mode -->
+        <div id="hostLobbySection" class="hidden">
+          <p class="lobby-text">Establishing P2P Host Node...</p>
+          <div class="code-box">
+            <span class="label">ROOM CODE:</span>
+            <span id="roomCodeDisplay" class="value-highlight" style="font-size: 2.2rem; color: #f0d500;">----</span>
+          </div>
+          <p class="lobby-text" style="margin-top: 15px; color: #a0cda0;">Tell this code to your friend to join...</p>
+          <div class="loading-spinner"></div>
+        </div>
+
+        <!-- Joining Mode -->
+        <div id="joinLobbySection" class="hidden">
+          <p class="lobby-text" style="margin-bottom: 15px;">Enter your friend's Room Code to connect:</p>
+          <input type="text" id="joinCodeInput" maxlength="4" placeholder="1234" class="code-input">
+          <button id="connectBtn" class="btn btn-primary" style="display: block; margin: 20px auto 0; width: 100%;">CONNECT</button>
+          <p id="connectionStatus" class="lobby-status" style="margin-top: 15px; color: #ff3c3c; min-height: 20px; font-weight: bold;"></p>
+        </div>
+
+        <button id="cancelLobbyBtn" class="btn btn-secondary" style="margin-top: 30px; width: 100%;">CANCEL</button>
       </div>
     </div>
 

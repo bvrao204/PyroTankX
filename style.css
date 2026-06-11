@@ -491,3 +491,164 @@ body {
   border-color: rgba(255, 100, 100, 0.95);
   box-shadow: 0 0 25px rgba(230, 40, 40, 0.6);
 }
+
+/* --- DIFFICULTY SELECTION PANEL --- */
+.difficulty-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(20, 30, 20, 0.5);
+  border: 1px solid rgba(180, 180, 180, 0.15);
+  border-radius: 8px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+}
+
+.diff-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a0cda0;
+  letter-spacing: 1px;
+}
+
+.diff-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.diff-btn {
+  background: rgba(10, 15, 10, 0.8);
+  color: #8fa08f;
+  border: 1px solid rgba(120, 150, 120, 0.3);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 1px;
+}
+
+.diff-btn:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(20, 40, 20, 0.5);
+}
+
+.diff-btn#diffEasy.active {
+  background: #185e18;
+  color: #ffffff;
+  border-color: #00ff00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+}
+
+.diff-btn#diffMedium.active {
+  background: #c88c00;
+  color: #ffffff;
+  border-color: #f0d500;
+  box-shadow: 0 0 10px rgba(240, 213, 0, 0.4);
+}
+
+.diff-btn#diffHard.active {
+  background: #8c1a1a;
+  color: #ffffff;
+  border-color: #ff3c3c;
+  box-shadow: 0 0 10px rgba(255, 60, 60, 0.4);
+}
+
+/* --- MULTIPLAYER OVERLAYS & LAYOUTS --- */
+.multiplayer-row {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-multi {
+  flex: 1;
+}
+
+.lobby-card {
+  background: rgba(10, 15, 10, 0.94);
+  border: 1px solid rgba(120, 180, 120, 0.3);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 210, 210, 0.1);
+}
+
+.lobby-text {
+  font-size: 0.9rem;
+  color: #bfcfbf;
+  line-height: 1.6;
+}
+
+.code-box {
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px dashed rgba(240, 213, 0, 0.4);
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.code-box .label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.75rem;
+  color: #8fa08f;
+  letter-spacing: 2px;
+}
+
+.code-input {
+  display: block;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(180, 180, 180, 0.3);
+  border-radius: 8px;
+  color: #ffffff;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-align: center;
+  padding: 10px;
+  margin-top: 15px;
+  letter-spacing: 8px;
+  outline: none;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+}
+
+.code-input:focus {
+  border-color: #00d2d2;
+  box-shadow: 0 0 15px rgba(0, 210, 210, 0.4);
+}
+
+.code-input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+  letter-spacing: 8px;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(240, 213, 0, 0.2);
+  border-top-color: #f0d500;
+  border-radius: 50%;
+  margin: 25px auto 10px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.lobby-status {
+  font-size: 0.85rem;
+  margin-top: 10px;
+  min-height: 20px;
+}
