@@ -46,6 +46,7 @@ const restartBtn = document.getElementById('restartBtn');
 const startHighScore = document.getElementById('startHighScore');
 const finalScore = document.getElementById('finalScore');
 const endHighScore = document.getElementById('endHighScore');
+const muteBtn = document.getElementById('muteBtn');
 
 // Canvas Setup
 const canvas = document.getElementById('gameCanvas');
@@ -111,6 +112,280 @@ if (localStorage.getItem('pyrotankx_highscore')) {
   highScore = parseInt(localStorage.getItem('pyrotankx_highscore')) || 0;
 }
 startHighScore.textContent = `HIGH SCORE: ${highScore}`;
+
+// --- SOUND FX GENERATOR (WEB AUDIO API) ---
+class SoundFX {
+  constructor() {
+    this.ctx = null;
+    this.muted = localStorage.getItem('pyrotankx_muted') === 'true';
+    this.enabled = true;
+  }
+
+  init() {
+    if (this.ctx) return;
+    try {
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      console.warn("Web Audio API not supported in this browser.", e);
+      this.enabled = false;
+    }
+  }
+
+  toggleMute() {
+    this.muted = !this.muted;
+    localStorage.setItem('pyrotankx_muted', this.muted);
+    this.updateMuteBtnUI();
+  }
+
+  updateMuteBtnUI() {
+    if (muteBtn) {
+      muteBtn.textContent = this.muted ? '🔇' : '🔊';
+      muteBtn.style.borderColor = this.muted ? '#c81e1e' : 'rgba(180, 180, 180, 0.35)';
+    }
+  }
+
+  playShoot() {
+    if (!this.enabled || this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(800, t);
+    osc.frequency.exponentialRampToValueAtTime(100, t + 0.15);
+
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.15);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.15);
+  }
+
+  playEnemyShoot() {
+    if (!this.enabled || this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(400, t);
+    osc.frequency.exponentialRampToValueAtTime(80, t + 0.12);
+
+    gain.gain.setValueAtTime(0.04, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.12);
+  }
+
+  playExplosion() {
+    if (!this.enabled || this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(160, t);
+    osc.frequency.linearRampToValueAtTime(10, t + 0.35);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(300, t);
+    filter.frequency.linearRampToValueAtTime(50, t + 0.35);
+
+    gain.gain.setValueAtTime(0.28, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.35);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.35);
+  }
+
+  playHit() {
+    if (!this.enabled || this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(140, t);
+    osc.frequency.linearRampToValueAtTime(50, t + 0.1);
+
+    gain.gain.setValueAtTime(0.18, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.1);
+  }
+
+  playPowerup() {
+    if (!this.enabled || this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(300, t);
+    osc.frequency.setValueAtTime(450, t + 0.08);
+    osc.frequency.setValueAtTime(600, t + 0.16);
+    osc.frequency.setValueAtTime(750, t + 0.24);
+
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.linearRampToValueAtTime(0.12, t + 0.24);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.32);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.32);
+  }
+
+  playWaveIncoming() {
+    if (!this.enabled || this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const t = this.ctx.currentTime;
+    const osc1 = this.ctx.createOscillator();
+    const osc2 = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc1.type = 'sawtooth';
+    osc1.frequency.setValueAtTime(220, t);
+    osc1.frequency.linearRampToValueAtTime(440, t + 0.45);
+
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(440, t);
+    osc2.frequency.linearRampToValueAtTime(880, t + 0.45);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(400, t);
+    filter.frequency.linearRampToValueAtTime(1000, t + 0.45);
+
+    gain.gain.setValueAtTime(0.08, t);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.45);
+
+    osc1.connect(filter);
+    osc2.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc1.start(t);
+    osc1.stop(t + 0.45);
+    osc2.start(t);
+    osc2.stop(t + 0.45);
+  }
+
+  playGameOver() {
+    if (!this.enabled || this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    const filter = this.ctx.createBiquadFilter();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.setValueAtTime(165, t + 0.25);
+    osc.frequency.setValueAtTime(110, t + 0.5);
+
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(300, t);
+
+    gain.gain.setValueAtTime(0.14, t);
+    gain.gain.linearRampToValueAtTime(0.14, t + 0.5);
+    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.9);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.9);
+  }
+
+  playClick() {
+    if (!this.enabled || this.muted) return;
+    this.init();
+    if (!this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
+
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(600, t);
+    osc.frequency.exponentialRampToValueAtTime(1000, t + 0.05);
+
+    gain.gain.setValueAtTime(0.05, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    osc.start(t);
+    osc.stop(t + 0.05);
+  }
+}
+
+const sfx = new SoundFX();
+sfx.updateMuteBtnUI();
+
+// Attach mute click handler
+if (muteBtn) {
+  muteBtn.addEventListener('click', () => {
+    sfx.toggleMute();
+  });
+}
+
+let pendingClientSounds = [];
+function playSound(soundName) {
+  if (sfx[soundName]) {
+    sfx[soundName]();
+  }
+  if (isMultiplayer && isHost) {
+    pendingClientSounds.push(soundName);
+  }
+}
 
 // --- SEED-LIKE PSEUDO-RANDOM GENERATOR ---
 // Used to make the ground generation deterministic like Python's random.Random(42)
@@ -466,6 +741,7 @@ class Player {
     if (this.invincible === 0) {
       this.hp -= 1;
       this.invincible = 60;
+      playSound('playHit');
       return true;
     }
     return false;
@@ -788,9 +1064,9 @@ function setDifficulty(diff) {
   else if (diff === 'hard') diffHard.classList.add('active');
 }
 
-diffEasy.addEventListener('click', () => setDifficulty('easy'));
-diffMedium.addEventListener('click', () => setDifficulty('medium'));
-diffHard.addEventListener('click', () => setDifficulty('hard'));
+diffEasy.addEventListener('click', () => { sfx.playClick(); setDifficulty('easy'); });
+diffMedium.addEventListener('click', () => { sfx.playClick(); setDifficulty('medium'); });
+diffHard.addEventListener('click', () => { sfx.playClick(); setDifficulty('hard'); });
 
 // Multiplayer Buttons Event Listeners
 const hostBtn = document.getElementById('hostBtn');
@@ -804,7 +1080,10 @@ const connectBtn = document.getElementById('connectBtn');
 const connectionStatus = document.getElementById('connectionStatus');
 const cancelLobbyBtn = document.getElementById('cancelLobbyBtn');
 
-cancelLobbyBtn.addEventListener('click', disconnectMultiplayer);
+cancelLobbyBtn.addEventListener('click', () => {
+  sfx.playClick();
+  disconnectMultiplayer();
+});
 
 function disconnectMultiplayer() {
   if (conn) {
@@ -822,6 +1101,7 @@ function disconnectMultiplayer() {
 }
 
 hostBtn.addEventListener('click', () => {
+  sfx.playClick();
   startScreen.classList.add('hidden');
   lobbyOverlay.classList.remove('hidden');
   hostLobbySection.classList.remove('hidden');
@@ -831,6 +1111,7 @@ hostBtn.addEventListener('click', () => {
 });
 
 joinBtn.addEventListener('click', () => {
+  sfx.playClick();
   startScreen.classList.add('hidden');
   lobbyOverlay.classList.remove('hidden');
   hostLobbySection.classList.add('hidden');
@@ -840,6 +1121,7 @@ joinBtn.addEventListener('click', () => {
 });
 
 connectBtn.addEventListener('click', () => {
+  sfx.playClick();
   const code = joinCodeInput.value.trim().toUpperCase();
   if (code.length !== 4) {
     connectionStatus.textContent = 'Room Code must be 4 characters.';
@@ -942,6 +1224,13 @@ function joinOnlineGame(code) {
         document.getElementById('p2HealthSection').querySelector('.hud-title').textContent = `${p2Name.toUpperCase()} ARMOR`;
       } else if (data.type === 'state') {
         remoteState = data;
+        if (data.sounds) {
+          data.sounds.forEach(soundName => {
+            if (sfx[soundName]) {
+              sfx[soundName]();
+            }
+          });
+        }
       } else if (data.type === 'powerup') {
         if (data.kind === 'health') {
           player.hp = Math.min(player.maxHp, player.hp + 2);
@@ -967,8 +1256,14 @@ function joinOnlineGame(code) {
 }
 
 // Button Click Handlers
-playBtn.addEventListener('click', startGame);
-restartBtn.addEventListener('click', startGame);
+playBtn.addEventListener('click', () => {
+  sfx.playClick();
+  startGame();
+});
+restartBtn.addEventListener('click', () => {
+  sfx.playClick();
+  startGame();
+});
 
 // --- MAIN GAME FLOW ---
 
@@ -1043,6 +1338,7 @@ function spawnWave() {
   for (let i = 0; i < numEnemies; i++) {
     enemies.push(new Enemy(wave));
   }
+  playSound('playWaveIncoming');
 
   // Display Wave incoming HUD banner
   waveBanner.textContent = `WAVE ${wave} INCOMING`;
@@ -1054,6 +1350,7 @@ function spawnWave() {
 
 function handleGameOver() {
   gameState = STATE_GAME_OVER;
+  playSound('playGameOver');
   
   // Save Highscore (Single Player only)
   if (!isMultiplayer && score > highScore) {
@@ -1080,6 +1377,12 @@ function update() {
     // --- CLIENT UPDATE LOOP ---
     if (player.hp > 0) {
       player.update();
+    }
+    
+    // Client local audio feedback for shooting
+    if (player.hp > 0 && (keys[' '] || isMouseDown || isMobileFireActive) && player.shootCooldown === 0) {
+      player.shootCooldown = player.shootDelay;
+      sfx.playShoot();
     }
     
     // Send local input state to Host
@@ -1182,13 +1485,17 @@ function update() {
       const bx = p2Player.x + Math.cos(rad) * 35;
       const by = p2Player.y + Math.sin(rad) * 35;
       bullets.push(new Bullet(bx, by, p2Player.angle, 'player2', 10));
+      playSound('playShoot');
     }
   }
 
   // Handle Player 1 shooting
   if (player.hp > 0 && (keys[' '] || isMouseDown || isMobileFireActive)) {
     const b = player.shoot();
-    if (b) bullets.push(b);
+    if (b) {
+      bullets.push(b);
+      playSound('playShoot');
+    }
   }
 
   // Spawner and Powerup Spawn timer adjusted by difficulty
@@ -1266,7 +1573,10 @@ function update() {
 
     // Enemy shoots
     const eb = enemy.shoot(target);
-    if (eb) bullets.push(eb);
+    if (eb) {
+      bullets.push(eb);
+      playSound('playEnemyShoot');
+    }
 
     // Collide with Player 1 (Ramming)
     if (player.hp > 0) {
@@ -1276,6 +1586,7 @@ function update() {
           player.takeDamage();
         }
         explosions.push(new Explosion(enemy.x, enemy.y));
+        playSound('playExplosion');
         score += 100;
         enemies.splice(i, 1);
         continue;
@@ -1284,13 +1595,15 @@ function update() {
 
     // Collide with Player 2 (Ramming)
     if (isMultiplayer && p2Player.hp > 0) {
-      const distTanks = Math.hypot(p2Player.x - enemy.x, player.y - enemy.y);
+      const distTanks = Math.hypot(p2Player.x - enemy.x, p2Player.y - enemy.y);
       if (distTanks < 35) {
         if (!p2Inputs.shieldActive && p2Player.invincible === 0) {
           p2Player.hp = Math.max(0, p2Player.hp - 1);
           p2Player.invincible = 60;
+          playSound('playHit');
         }
         explosions.push(new Explosion(enemy.x, enemy.y));
+        playSound('playExplosion');
         score += 100;
         enemies.splice(i, 1);
         continue;
@@ -1318,6 +1631,7 @@ function update() {
           if (enemy.takeHit()) {
             score += 200;
             explosions.push(new Explosion(enemy.x, enemy.y));
+            playSound('playExplosion');
             
             // Drop powerup
             let dropChance = 0.15;
@@ -1333,6 +1647,7 @@ function update() {
             enemies.splice(j, 1);
           } else {
             explosions.push(new Explosion(b.x, b.y, 10));
+            playSound('playHit');
           }
           bullets.splice(i, 1);
           break;
@@ -1346,6 +1661,8 @@ function update() {
           b.alive = false;
           if (shieldTimer <= 0) {
             player.takeDamage();
+          } else {
+            playSound('playHit');
           }
           explosions.push(new Explosion(b.x, b.y, 12));
           bullets.splice(i, 1);
@@ -1361,6 +1678,9 @@ function update() {
           if (!p2Inputs.shieldActive && p2Player.invincible === 0) {
             p2Player.hp = Math.max(0, p2Player.hp - 1);
             p2Player.invincible = 60;
+            playSound('playHit');
+          } else {
+            playSound('playHit');
           }
           explosions.push(new Explosion(b.x, b.y, 12));
           bullets.splice(i, 1);
@@ -1422,6 +1742,7 @@ function update() {
         gameState,
         waveTransitionTimer,
         animFrame: Date.now() * 0.1,
+        sounds: pendingClientSounds,
         player1: {
           x: player.x,
           y: player.y,
@@ -1443,6 +1764,7 @@ function update() {
         shieldActive: shieldTimer > 0,
         rapidFireActive: rapidFireTimer > 0
       });
+      pendingClientSounds = [];
     }
   }
 }
@@ -1568,6 +1890,7 @@ requestAnimationFrame(loop);
 // --- NETWORK & DRAW HELPERS ---
 
 function applyPowerup(tank, kind) {
+  playSound('playPowerup');
   if (kind === 'health') {
     tank.hp = Math.min(tank.maxHp, tank.hp + 2);
   } else if (kind === 'rapid') {
